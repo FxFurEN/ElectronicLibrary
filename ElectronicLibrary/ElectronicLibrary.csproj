@@ -9,7 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DevExpress.Data.ru" Version="21.2.15" />
     <PackageReference Include="Npgsql" Version="8.0.1" />
+    <PackageReference Include="Pdfium.Net.SDK" Version="4.87.2704" />
+    <PackageReference Include="PdfiumViewer" Version="2.13.0" />
   </ItemGroup>
 
 </Project>
