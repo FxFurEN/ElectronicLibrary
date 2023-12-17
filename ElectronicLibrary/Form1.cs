@@ -14,9 +14,8 @@ namespace ElectronicLibrary
     public partial class Form1 : Form
     {
 
-        private bool isFormOpening = false;
-        // Укажите путь к вашему PDF-файлу
-        string filePath = "C:/4 курс/курсачи/ElectronicLibrary/kapitanskaya-dochka.pdf";
+        private bool isFormOpen = false; // Флаг для отслеживания открытости формы
+       
 
         // Установите параметры подключения к базе данных
         private const string connectionString = "Host=localhost;Port=5432;Username=postgres;Password=12300;Database=postgres";
@@ -25,12 +24,16 @@ namespace ElectronicLibrary
         public Form1()
         {
             InitializeComponent();
-            LoadDataIntoDataGridView();
-            dataGridView1.CellDoubleClick += dataGridView1_CellDoubleClick;
+            LoadDataIntoListBox();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+        // метод для добалвение книги в бд 
+        private void button2_Click(object sender, EventArgs e)
         {
+            // Укажите путь к вашему PDF-файлу
+            string filePath = "C:/4 курс/курсачи/ElectronicLibrary/kapitanskaya-dochka.pdf";
+
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
             {
                 connection.Open();
@@ -59,59 +62,21 @@ namespace ElectronicLibrary
                 connection.Close();
             }
         }
-        private void LoadDataIntoDataGridView()
+
+        private void buttonOpenReadForm_Click(object sender, EventArgs e)
         {
-            try
+            // Проверяем, что в ListBox выбран элемент
+            if (listBox1.SelectedItem != null)
             {
-                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
-                {
-                    connection.Open();
-
-                    // Включите столбец "id" в запрос, чтобы он был доступен для использования в dataGridView1_CellDoubleClick
-                    string query = @"
-                SELECT 
-                    id as ""Код книги"", 
-                    title as ""Название книги"", 
-                    author as ""Автор"", 
-                    release_date as ""Дата релиза""
-                FROM public.books_tbl";
-
-                    using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(query, connection))
-                    {
-                        DataSet dataSet = new DataSet();
-                        adapter.Fill(dataSet, "Books");
-
-                        // Замените "dataGridView1" на имя вашего DataGridView
-                        dataGridView1.DataSource = dataSet.Tables["Books"];
-                    }
-
-                    connection.Close();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Ошибка при загрузке данных из базы данных: " + ex.Message);
-            }
-        }
-
-
-
-
-        private bool isFormOpen = false; // Флаг для отслеживания открытости формы
-
-        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            // Проверяем, что двойной клик произошел по ячейке с содержимым PDF (например, по столбцу "Title" или "Author")
-            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
-            {
-                // Если форма уже открыта, выходим
                 if (isFormOpen)
                 {
                     return;
                 }
+                // Получаем информацию о выбранной книге
+                BookInfo selectedBook = (BookInfo)listBox1.SelectedItem;
 
-                // Получаем значение столбца "id" для выбранной строки
-                int id = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["Код книги"].Value);
+                // Получаем id выбранной книги
+                int selectedBookId = selectedBook.Id;
 
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
@@ -121,7 +86,7 @@ namespace ElectronicLibrary
                     string query = "SELECT file_content FROM public.books_tbl WHERE id = @Id";
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Id", id);
+                        command.Parameters.AddWithValue("@Id", selectedBookId);
 
                         // Получаем бинарные данные файла
                         byte[] fileContent = (byte[])command.ExecuteScalar();
@@ -129,16 +94,8 @@ namespace ElectronicLibrary
                         // Создаем и открываем форму для просмотра PDF
                         ReadForm pdfViewerForm = new ReadForm(fileContent);
                         this.Hide();
-                        pdfViewerForm.FormClosed += (s, args) =>
-                        {
-                            // Устанавливаем флаг в false при закрытии формы
-                            isFormOpen = false;
-                            this.Close();
-                        };
+                        pdfViewerForm.FormClosed += (s, args) => this.Close();
                         pdfViewerForm.Show();
-
-                        // Устанавливаем флаг в true при открытии формы
-                        isFormOpen = true;
                     }
 
                     connection.Close();
@@ -148,5 +105,104 @@ namespace ElectronicLibrary
 
 
 
+        private void LoadDataIntoListBox()
+        {
+            try
+            {
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"
+            SELECT 
+                id as ""Код книги"",
+                title as ""Название книги""
+            FROM public.books_tbl";
+
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                    {
+                        using (NpgsqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                // Добавляем в ListBox объект с информацией о книге (название и id)
+                                BookInfo bookInfo = new BookInfo
+                                {
+                                    Title = reader["Название книги"].ToString(),
+                                    Id = Convert.ToInt32(reader["Код книги"])
+                                };
+                                listBox1.Items.Add(bookInfo);
+                            }
+                        }
+                    }
+
+                    connection.Close();
+                }
+
+                // Автоматически выбираем первый элемент в ListBox
+                if (listBox1.Items.Count > 0)
+                {
+                    listBox1.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке данных из базы данных: " + ex.Message);
+            }
+        }
+        // ...
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Проверяем, что в ListBox выбран элемент
+            if (listBox1.SelectedItem != null)
+            {
+                // Получаем информацию о выбранной книге
+                BookInfo selectedBook = (BookInfo)listBox1.SelectedItem;
+
+                // Используем id выбранной книги для запроса дополнительной информации из БД
+                try
+                {
+                    using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                    {
+                        connection.Open();
+
+                        string query = @"
+                SELECT 
+                    author as ""Автор"",
+                    description as ""Описание"",
+                    release_date as ""Дата релиза""
+                FROM public.books_tbl
+                WHERE id = @Id";
+
+                        using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@Id", selectedBook.Id);
+
+                            using (NpgsqlDataReader reader = command.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    // Выводим информацию об авторе и дате выхода в Label
+                                    label2.Text = $"{reader["Автор"].ToString()}";
+                                    // Отображаем только год, месяц и день
+                                    DateTime releaseDate = Convert.ToDateTime(reader["Дата релиза"]);
+                                    label4.Text = $"{releaseDate.ToString("yyyy-MM-dd")}";
+
+                                    // Выводим описание в RichTextBox
+                                    richTextBox1.Text = reader["Описание"].ToString();
+                                }
+                            }
+                        }
+
+                        connection.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке дополнительных данных из базы данных: " + ex.Message);
+                }
+            }
+        }
     }
 }

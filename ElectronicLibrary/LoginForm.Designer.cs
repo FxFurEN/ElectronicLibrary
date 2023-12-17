@@ -39,11 +39,11 @@
             // 
             // button1
             // 
-            button1.Location = new Point(214, 429);
+            button1.Location = new Point(80, 423);
             button1.Name = "button1";
             button1.Size = new Size(357, 93);
             button1.TabIndex = 0;
-            button1.Text = "Войти";
+            button1.Text = "Авторизоваться";
             button1.UseVisualStyleBackColor = true;
             button1.Click += btnLogin_Click;
             // 
@@ -51,7 +51,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 26F, FontStyle.Bold, GraphicsUnit.Point);
-            label1.Location = new Point(204, 70);
+            label1.Location = new Point(70, 64);
             label1.Name = "label1";
             label1.Size = new Size(367, 70);
             label1.TabIndex = 1;
@@ -59,14 +59,14 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(291, 237);
+            textBox1.Location = new Point(157, 231);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(214, 31);
             textBox1.TabIndex = 2;
             // 
             // textBox2
             // 
-            textBox2.Location = new Point(291, 313);
+            textBox2.Location = new Point(157, 307);
             textBox2.Name = "textBox2";
             textBox2.Size = new Size(214, 31);
             textBox2.TabIndex = 3;
@@ -74,7 +74,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(226, 240);
+            label2.Location = new Point(92, 234);
             label2.Name = "label2";
             label2.Size = new Size(59, 25);
             label2.TabIndex = 4;
@@ -83,7 +83,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(214, 316);
+            label3.Location = new Point(80, 310);
             label3.Name = "label3";
             label3.Size = new Size(71, 25);
             label3.TabIndex = 5;
@@ -92,8 +92,8 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.ForeColor = SystemColors.MenuHighlight;
-            label4.Location = new Point(236, 581);
+            label4.ForeColor = Color.Red;
+            label4.Location = new Point(102, 575);
             label4.Name = "label4";
             label4.Size = new Size(304, 25);
             label4.TabIndex = 6;
@@ -104,7 +104,8 @@
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 852);
+            BackColor = SystemColors.ActiveCaption;
+            ClientSize = new Size(502, 711);
             Controls.Add(label4);
             Controls.Add(label3);
             Controls.Add(label2);
